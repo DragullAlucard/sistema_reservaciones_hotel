@@ -1,1 +1,124 @@
+package com.mycompany.claseclienteyclasereserva1;
 
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class Claseclienteyclasereserva1 {
+    
+
+//  Esta clase interna representa una reserva individual.
+    // Cada reserva tiene sus datos básicos: id, habitación, cliente, fechas, estado y total.
+    static class Reserva {
+        private String id;
+        private String habitacionId;
+        private String clienteId;
+        private String fechaInicio;
+        private String fechaFin;
+        private String estado;
+        private double total;
+
+        //  Constructor: sirve para crear una reserva nueva con todos los datos completos.
+        public Reserva(String id, String habitacionId, String clienteId,
+                       String fechaInicio, String fechaFin, String estado, double total) {
+            this.id = id;
+            this.habitacionId = habitacionId;
+            this.clienteId = clienteId;
+            this.fechaInicio = fechaInicio;
+            this.fechaFin = fechaFin;
+            this.estado = estado;
+            this.total = total;
+        }
+
+        //  Este método sirve para mostrar la información de la reserva en forma de texto.
+        @Override
+        public String toString() {
+            return "Reserva {" +
+                    "ID='" + id + '\'' +
+                    ", Habitación='" + habitacionId + '\'' +
+                    ", Cliente='" + clienteId + '\'' +
+                    ", FechaInicio='" + fechaInicio + '\'' +
+                    ", FechaFin='" + fechaFin + '\'' +
+                    ", Estado='" + estado + '\'' +
+                    ", Total=" + total +
+                    '}';
+        }
+    }
+
+    //  Aquí guardamos todas las reservas creadas (una especie de base de datos temporal en memoria).
+    private static ArrayList<Reserva> reservas = new ArrayList<>();
+
+    //  Objeto para leer lo que el usuario escriba en consola.
+    private static Scanner sc = new Scanner(System.in);
+
+    //  Este es el método principal (el que se ejecuta al iniciar el programa).
+    // Aquí se muestra el menú y se controla la navegación.
+    public static void main(String[] args) {
+        int opcion;
+        do {
+            // Mostramos el menú principal
+            System.out.println("\n===== MENÚ DE RESERVAS =====");
+            System.out.println("1. Agregar reserva");
+            System.out.println("2. Mostrar reservas");
+            System.out.println("0. Salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = sc.nextInt();  // leemos el número que el usuario ingresa
+            sc.nextLine(); // limpiamos el salto de línea
+
+            // Según la opción que elija el usuario, hacemos algo diferente
+            switch (opcion) {
+                case 1 -> agregarReserva(); // opción para crear una nueva reserva
+                case 2 -> mostrarReservas(); // opción para ver todas las reservas
+                case 0 -> System.out.println("Saliendo..."); // termina el programa
+                default -> System.out.println("Opción inválida."); // si el número no existe
+            }
+        } while (opcion != 0); // el menú se repite hasta que el usuario escriba 0
+    }
+
+    //  Este método sirve para agregar una nueva reserva a la lista.
+    // Llama al método que pide los datos y luego guarda la reserva.
+    private static void agregarReserva() {
+        Reserva nueva = crearReservaDesdeInput(); // crea una reserva nueva
+        reservas.add(nueva); // la guarda en el ArrayList
+    }
+
+    //  Este método se encarga de pedir los datos al usuario y crear el objeto Reserva.
+    private static Reserva crearReservaDesdeInput() {
+        System.out.print("Ingrese ID de la reserva: ");
+        String id = sc.nextLine();
+
+        System.out.print("Ingrese ID de la habitación: ");
+        String habitacionId = sc.nextLine();
+
+        System.out.print("Ingrese ID del cliente: ");
+        String clienteId = sc.nextLine();
+
+        System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
+        String fechaInicio = sc.nextLine();
+
+        System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
+        String fechaFin = sc.nextLine();
+
+        System.out.print("Ingrese estado (activa, cancelada, finalizada): ");
+        String estado = sc.nextLine();
+
+        System.out.print("Ingrese total a pagar: ");
+        double total = sc.nextDouble();
+        sc.nextLine(); // limpiamos el buffer
+
+        //  Aquí creamos el objeto Reserva con los datos que el usuario ingresó.
+        return new Reserva(id, habitacionId, clienteId, fechaInicio, fechaFin, estado, total);
+    }
+
+    //  Este método muestra todas las reservas guardadas hasta el momento.
+    private static void mostrarReservas() {
+        if (reservas.isEmpty()) {
+            System.out.println("No hay reservas registradas.");
+        } else {
+            System.out.println("\n--- LISTA DE RESERVAS ---");
+            for (Reserva r : reservas) {
+                System.out.println(r); // muestra la reserva usando toString()
+            }
+        }
+    }
+}
