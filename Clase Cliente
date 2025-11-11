@@ -1,1 +1,260 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+public class SistemaHotel {
+
+    /* 
+       CLASE CLIENTE
+       Esta clase guarda los datos personales del cliente.
+       Es como la "ficha" de la persona que reserva.
+       */
+    static class Cliente {
+        // Atributos básicos del cliente
+        private String id;
+        private String nombre;
+        private String telefono;
+        private String email;
+
+        // Constructor: sirve para crear un cliente con sus datos
+        public Cliente(String id, String nombre, String telefono, String email) {
+            this.id = id;
+            this.nombre = nombre;
+            this.telefono = telefono;
+            this.email = email;
+        }
+
+        // Este método devuelve el ID del cliente, lo usamos para buscarlo más adelante
+        public String getId() {
+            return id;
+        }
+
+        // Aquí devolvemos todos los datos del cliente en formato de texto
+        @Override
+        public String toString() {
+            return "Cliente {" +
+                    "ID='" + id + '\'' +
+                    ", Nombre='" + nombre + '\'' +
+                    ", Teléfono='" + telefono + '\'' +
+                    ", Email='" + email + '\'' +
+                    '}';
+        }
+    }
+
+    /* 
+       CLASE RESERVA
+       Esta clase representa una reserva de habitación.
+       Contiene el ID del cliente, fechas y el total a pagar.
+        */
+    static class Reserva {
+        private String id;
+        private String habitacionId;
+        private String clienteId;
+        private String fechaInicio;
+        private String fechaFin;
+        private String estado;
+        private double total;
+
+        // Constructor: cuando queremos crear una nueva reserva, usamos este.
+        public Reserva(String id, String habitacionId, String clienteId,
+                       String fechaInicio, String fechaFin, String estado, double total) {
+            this.id = id;
+            this.habitacionId = habitacionId;
+            this.clienteId = clienteId;
+            this.fechaInicio = fechaInicio;
+            this.fechaFin = fechaFin;
+            this.estado = estado;
+            this.total = total;
+        }
+
+        // Este método sirve solo para mostrar la reserva en pantalla
+        @Override
+        public String toString() {
+            return "Reserva {" +
+                    "ID='" + id + '\'' +
+                    ", Habitación='" + habitacionId + '\'' +
+                    ", Cliente='" + clienteId + '\'' +
+                    ", FechaInicio='" + fechaInicio + '\'' +
+                    ", FechaFin='" + fechaFin + '\'' +
+                    ", Estado='" + estado + '\'' +
+                    ", Total=" + total +
+                    '}';
+        }
+    }
+
+    /* 
+       VARIABLES GLOBALES
+       Aquí guardamos todas las listas y el lector de teclado.
+       */
+    private static ArrayList<Cliente> clientes = new ArrayList<>(); // donde se guardan los clientes
+    private static ArrayList<Reserva> reservas = new ArrayList<>(); // donde se guardan las reservas
+    private static Scanner sc = new Scanner(System.in); // para leer lo que el usuario escribe
+
+    /* 
+       MÉTODO PRINCIPAL
+       Este es el punto de inicio del programa.
+       Muestra el menú principal y dirige a los otros menús.
+       */
+    public static void main(String[] args) {
+        int opcion;
+        do {
+            // Mostramos el menú principal
+            System.out.println("\n========= MENÚ PRINCIPAL =========");
+            System.out.println("1. Menú de clientes");
+            System.out.println("2. Menú de reservas");
+            System.out.println("0. Salir");
+            System.out.print("Seleccione una opción: ");
+            opcion = sc.nextInt();
+            sc.nextLine(); // esto limpia el salto de línea
+
+            // Dependiendo de lo que elija el usuario, hacemos algo distinto
+            switch (opcion) {
+                case 1 -> menuClientes();   // ir al menú de clientes
+                case 2 -> menuReservas();   // ir al menú de reservas
+                case 0 -> System.out.println("👋 Saliendo del sistema...");
+                default -> System.out.println("⚠ Opción no válida. Intente de nuevo.");
+            }
+        } while (opcion != 0); // repetimos hasta que el usuario escriba 0
+    }
+
+    /* 
+       MENÚ DE CLIENTES
+       Aquí se maneja todo lo relacionado con los clientes.
+      */
+    private static void menuClientes() {
+        int op;
+        do {
+            System.out.println("\n----- MENÚ CLIENTES -----");
+            System.out.println("1. Agregar cliente");
+            System.out.println("2. Mostrar clientes");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("Seleccione una opción: ");
+            op = sc.nextInt();
+            sc.nextLine();
+
+            switch (op) {
+                case 1 -> agregarCliente();   // opción para crear un nuevo cliente
+                case 2 -> mostrarClientes();  // opción para ver todos los clientes
+                case 0 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción no válida.");
+            }
+        } while (op != 0); // repetimos hasta que el usuario elija volver
+    }
+
+    // Este método pide los datos del cliente y lo guarda en la lista
+    private static void agregarCliente() {
+        System.out.print("Ingrese ID del cliente: ");
+        String id = sc.nextLine();
+
+        System.out.print("Ingrese nombre: ");
+        String nombre = sc.nextLine();
+
+        System.out.print("Ingrese teléfono: ");
+        String telefono = sc.nextLine();
+
+        System.out.print("Ingrese correo electrónico: ");
+        String email = sc.nextLine();
+
+        // Creamos un nuevo objeto cliente con los datos escritos
+        Cliente nuevo = new Cliente(id, nombre, telefono, email);
+
+        // Lo agregamos a la lista general de clientes
+        clientes.add(nuevo);
+        System.out.println("✅ Cliente agregado correctamente.");
+    }
+
+    // Este método recorre la lista de clientes y los muestra
+    private static void mostrarClientes() {
+        if (clientes.isEmpty()) {
+            System.out.println("No hay clientes registrados.");
+        } else {
+            System.out.println("\n--- LISTA DE CLIENTES ---");
+            for (Cliente c : clientes) {
+                System.out.println(c); // imprime usando el toString del cliente
+            }
+        }
+    }
+
+    /* 
+       MENÚ DE RESERVAS
+       Aquí manejamos todo lo relacionado con las reservas.
+     */
+    private static void menuReservas() {
+        int op;
+        do {
+            System.out.println("\n----- MENÚ RESERVAS -----");
+            System.out.println("1. Agregar reserva");
+            System.out.println("2. Mostrar reservas");
+            System.out.println("0. Volver al menú principal");
+            System.out.print("Seleccione una opción: ");
+            op = sc.nextInt();
+            sc.nextLine();
+
+            switch (op) {
+                case 1 -> agregarReserva();   // crear nueva reserva
+                case 2 -> mostrarReservas();  // ver reservas existentes
+                case 0 -> System.out.println("Volviendo al menú principal...");
+                default -> System.out.println("Opción no válida.");
+            }
+        } while (op != 0);
+    }
+
+    // Este método pide los datos y crea una nueva reserva
+    private static void agregarReserva() {
+        System.out.print("Ingrese ID de la reserva: ");
+        String id = sc.nextLine();
+
+        System.out.print("Ingrese ID de la habitación: ");
+        String habitacionId = sc.nextLine();
+
+        System.out.print("Ingrese ID del cliente: ");
+        String clienteId = sc.nextLine();
+
+        // Aquí comprobamos si el cliente existe antes de permitir la reserva
+        boolean clienteExiste = false;
+        for (Cliente c : clientes) {
+            if (c.getId().equals(clienteId)) {
+                clienteExiste = true;
+                break;
+            }
+        }
+
+        // Si el cliente no existe, avisamos y no se crea la reserva
+        if (!clienteExiste) {
+            System.out.println(" El cliente con ese ID no existe. Regístrelo primero.");
+            return;
+        }
+
+        System.out.print("Ingrese fecha de inicio (YYYY-MM-DD): ");
+        String fechaInicio = sc.nextLine();
+
+        System.out.print("Ingrese fecha de fin (YYYY-MM-DD): ");
+        String fechaFin = sc.nextLine();
+
+        System.out.print("Ingrese estado (activa, cancelada, finalizada): ");
+        String estado = sc.nextLine();
+
+        System.out.print("Ingrese total a pagar: ");
+        double total = sc.nextDouble();
+        sc.nextLine(); // limpia el salto de línea
+
+        // Creamos el objeto reserva con toda la información
+        Reserva nueva = new Reserva(id, habitacionId, clienteId, fechaInicio, fechaFin, estado, total);
+
+        // Guardamos la reserva en la lista general
+        reservas.add(nueva);
+        System.out.println(" Reserva creada correctamente.");
+    }
+
+    // Muestra todas las reservas existentes
+    private static void mostrarReservas() {
+        if (reservas.isEmpty()) {
+            System.out.println("No hay reservas registradas.");
+        } else {
+            System.out.println("\n--- LISTA DE RESERVAS ---");
+            for (Reserva r : reservas) {
+                System.out.println(r); // imprimimos cada reserva
+            }
+        }
+    }
+}
 
