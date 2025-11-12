@@ -1,1 +1,15 @@
+private static void init() {
+    try {
+        FileInputStream serviceAccount = new FileInputStream("INGRESAR CONEXION CREDENCIALES");
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build();
+
+        FirebaseApp.initializeApp(options);
+        System.out.println("Conectado a Firebase correctamente");
+    } catch (IOException e) {
+        throw new RuntimeException("Error al inicializar Firebase: " + e.getMessage(), e);
+    }
+}
 
