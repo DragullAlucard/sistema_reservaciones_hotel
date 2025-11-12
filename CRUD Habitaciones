@@ -1,1 +1,76 @@
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+public class HabitacionService {
+
+    private static final String COLLECTION = "habitaciones";
+
+    public String crearHabitacion(Habitacion habitacion) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            if (habitacion.getId() == null || habitacion.getId().isEmpty()) {
+                DocumentReference ref = db.collection(COLLECTION).document();
+                habitacion.setId(ref.getId());
+                ref.set(habitacion).get();
+                return ref.getId();
+            } else {
+                db.collection(COLLECTION).document(habitacion.getId()).set(habitacion).get();
+                return habitacion.getId();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al crear habitación: " + e.getMessage(), e);
+        }
+    }
+
+    public Habitacion obtenerHabitacionPorId(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            DocumentSnapshot snap = db.collection(COLLECTION).document(id).get().get();
+            return snap.exists() ? snap.toObject(Habitacion.class) : null;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al obtener habitación: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Lista todas las habitaciones.
+     */
+    public List<Habitacion> obtenerTodasLasHabitaciones() {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            List<QueryDocumentSnapshot> docs = db.collection(COLLECTION).get().get().getDocuments();
+            List<Habitacion> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : docs) {
+                out.add(d.toObject(Habitacion.class));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al listar habitaciones: " + e.getMessage(), e);
+        }
+    }
+
+    public void actualizarHabitacion(Habitacion habitacion) {
+        if (habitacion.getId() == null || habitacion.getId().isEmpty()) {
+            throw new IllegalArgumentException("La habitación debe tener id para actualizar.");
+        }
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(habitacion.getId()).set(habitacion, SetOptions.merge()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al actualizar habitación: " + e.getMessage(), e);
+        }
+    }
+
+    public void eliminarHabitacion(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(id).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al eliminar habitación: " + e.getMessage(), e);
+        }
+    }
+}
 
