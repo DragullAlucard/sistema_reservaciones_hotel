@@ -1,1 +1,99 @@
+import com.google.cloud.firestore.*;
+import com.google.api.core.ApiFuture;
+
+import java.time.LocalDate;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+
+public class ReservacionService {
+
+    private static final String COLLECTION = "reservaciones";
+
+    public String crearReservacion(Reservacion reservacion) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            if (reservacion.getId() == null || reservacion.getId().isEmpty()) {
+                DocumentReference ref = db.collection(COLLECTION).document();
+                reservacion.setId(ref.getId());
+                ref.set(toMap(reservacion)).get();
+                return ref.getId();
+            } else {
+                db.collection(COLLECTION).document(reservacion.getId()).set(toMap(reservacion)).get();
+                return reservacion.getId();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al crear reservación: " + e.getMessage(), e);
+        }
+    }
+
+    public Reservacion obtenerReservacionPorId(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            DocumentSnapshot snap = db.collection(COLLECTION).document(id).get().get();
+            if (!snap.exists()) return null;
+            return fromDoc(snap);
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al obtener reservación: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Reservacion> obtenerTodasLasReservaciones() {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            List<QueryDocumentSnapshot> docs = db.collection(COLLECTION).get().get().getDocuments();
+            List<Reservacion> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : docs) {
+                out.add(fromDoc(d));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al listar reservaciones: " + e.getMessage(), e);
+        }
+    }
+
+    public void actualizarReservacion(Reservacion reservacion) {
+        if (reservacion.getId() == null || reservacion.getId().isEmpty()) {
+            throw new IllegalArgumentException("La reservación debe tener id para actualizar.");
+        }
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(reservacion.getId()).set(toMap(reservacion), SetOptions.merge()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al actualizar reservación: " + e.getMessage(), e);
+        }
+    }
+
+    public void eliminarReservacion(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(id).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al eliminar reservación: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Object> toMap(Reservacion r) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", r.getId());
+        map.put("clienteId", r.getClienteId());
+        map.put("habitacionId", r.getHabitacionId());
+        map.put("fechaInicio", r.getFechaInicio() != null ? r.getFechaInicio().toString() : null);
+        map.put("fechaFin", r.getFechaFin() != null ? r.getFechaFin().toString() : null);
+        map.put("estado", r.getEstado());
+        return map;
+    }
+
+    private Reservacion fromDoc(DocumentSnapshot d) {
+        Reservacion r = new Reservacion();
+        r.setId(d.getString("id"));
+        r.setClienteId(d.getString("clienteId"));
+        r.setHabitacionId(d.getString("habitacionId"));
+        String fi = d.getString("fechaInicio");
+        String ff = d.getString("fechaFin");
+        r.setFechaInicio(fi != null ? LocalDate.parse(fi) : null);
+        r.setFechaFin(ff != null ? LocalDate.parse(ff) : null);
+        r.setEstado(d.getString("estado"));
+        return r;
+    }
+}
 
