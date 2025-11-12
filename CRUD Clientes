@@ -1,1 +1,76 @@
+import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+/**
+ * Servicio que gestiona operaciones CRUD de clientes en Firestore.
+ */
+public class ClienteService {
+
+    private static final String COLLECTION = "clientes";
+
+    public String crearCliente(Cliente cliente) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            if (cliente.getId() == null || cliente.getId().isEmpty()) {
+                DocumentReference ref = db.collection(COLLECTION).document();
+                cliente.setId(ref.getId());
+                ref.set(cliente).get();
+                return ref.getId();
+            } else {
+                db.collection(COLLECTION).document(cliente.getId()).set(cliente).get();
+                return cliente.getId();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al crear cliente: " + e.getMessage(), e);
+        }
+    }
+
+    public Cliente obtenerClientePorId(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            DocumentSnapshot snap = db.collection(COLLECTION).document(id).get().get();
+            return snap.exists() ? snap.toObject(Cliente.class) : null;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al obtener cliente: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Cliente> obtenerTodosLosClientes() {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            List<QueryDocumentSnapshot> docs = db.collection(COLLECTION).get().get().getDocuments();
+            List<Cliente> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : docs) {
+                out.add(d.toObject(Cliente.class));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al listar clientes: " + e.getMessage(), e);
+        }
+    }
+
+    public void actualizarCliente(Cliente cliente) {
+        if (cliente.getId() == null || cliente.getId().isEmpty()) {
+            throw new IllegalArgumentException("El cliente debe tener id para actualizar.");
+        }
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(cliente.getId()).set(cliente, SetOptions.merge()).get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al actualizar cliente: " + e.getMessage(), e);
+        }
+    }
+
+    public void eliminarCliente(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(id).delete().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al eliminar cliente: " + e.getMessage(), e);
+        }
+    }
+}
 
