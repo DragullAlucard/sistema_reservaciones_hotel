@@ -1,1 +1,78 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package reservacioneshotel;
 
+/**
+ *
+ * @author alexander
+ */
+public class Habitacion {
+    private String id;              // ID único en la BD (Firebase)
+    private String numero;          // Número visible de la habitación
+    private String tipo;            // Ej: "SENCILLA", "DOBLE", "SUITE"
+    private double precioPorNoche;
+    private boolean disponible;     // true = disponible, false = ocupada/no disponible
+
+    public Habitacion() {
+    }
+
+    public Habitacion(String id, String numero, String tipo, double precioPorNoche, boolean disponible) {
+        this.id = id;
+        this.numero = numero;
+        this.tipo = tipo;
+        this.precioPorNoche = precioPorNoche;
+        this.disponible = disponible;
+    }
+
+    /** @return identificador único de la habitación. */
+    public String getId() {
+        return id;
+    }
+
+    /** @param id identificador único de la habitación. */
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    /** @return número asignado a la habitación. */
+    public String getNumero() {
+        return numero;
+    }
+
+    /** @param numero número asignado a la habitación. */
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    /** @return tipo de habitación (ej. sencilla, doble, suite). */
+    public String getTipo() {
+        return tipo;
+    }
+
+    /** @param tipo tipo de habitación (ej. sencilla, doble, suite). */
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    /** @return precio por noche de la habitación. */
+    public double getPrecioPorNoche() {
+        return precioPorNoche;
+    }
+
+    /** @param precioPorNoche precio por noche de la habitación. */
+    public void setPrecioPorNoche(double precioPorNoche) {
+        this.precioPorNoche = precioPorNoche;
+    }
+
+    /** @return true si la habitación está disponible para reservar. */
+    public boolean isDisponible() {
+        return disponible;
+    }
+
+    /** @param disponible indica si la habitación está disponible para reservar. */
+    public void setDisponible(boolean disponible) {
+        this.disponible = disponible;
+    }
+}
