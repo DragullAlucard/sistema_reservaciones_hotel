@@ -57,7 +57,8 @@ public class ReservacionService {
         }
         Firestore db = FirestoreUtil.getDb();
         try {
-            db.collection(COLLECTION).document(reservacion.getId()).set(toMap(reservacion), SetOptions.merge()).get();
+            db.collection(COLLECTION).document(reservacion.getId())
+                    .set(toMap(reservacion), SetOptions.merge()).get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("Error al actualizar reservación: " + e.getMessage(), e);
         }
@@ -72,6 +73,89 @@ public class ReservacionService {
         }
     }
 
+
+    public List<Reservacion> obtenerReservacionesPorCliente(String clienteId) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection(COLLECTION)
+                    .whereEqualTo("clienteId", clienteId)
+                    .get();
+            List<Reservacion> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : query.get().getDocuments()) {
+                out.add(fromDoc(d));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al buscar reservaciones del cliente: " + e.getMessage(), e);
+        }
+    }
+
+    public List<Reservacion> obtenerReservacionesPorRango(LocalDate inicio, LocalDate fin) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection(COLLECTION)
+                    .whereGreaterThanOrEqualTo("fechaInicio", inicio.toString())
+                    .whereLessThanOrEqualTo("fechaFin", fin.toString())
+                    .get();
+            List<Reservacion> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : query.get().getDocuments()) {
+                out.add(fromDoc(d));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al buscar reservaciones por rango: " + e.getMessage(), e);
+        }
+    }
+
+ 
+    public boolean estaDisponible(String habitacionId, LocalDate inicio, LocalDate fin) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection(COLLECTION)
+                    .whereEqualTo("habitacionId", habitacionId)
+                    .get();
+            for (QueryDocumentSnapshot d : query.get().getDocuments()) {
+                Reservacion r = fromDoc(d);
+                if (r.getFechaInicio() != null && r.getFechaFin() != null) {
+                    boolean seTraslapa = !(fin.isBefore(r.getFechaInicio()) || inicio.isAfter(r.getFechaFin()));
+                    if (seTraslapa) return false;
+                }
+            }
+            return true;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al verificar disponibilidad: " + e.getMessage(), e);
+        }
+    }
+
+
+    public List<Reservacion> obtenerReservacionesPorEstado(String estado) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            ApiFuture<QuerySnapshot> query = db.collection(COLLECTION)
+                    .whereEqualTo("estado", estado)
+                    .get();
+            List<Reservacion> out = new ArrayList<>();
+            for (QueryDocumentSnapshot d : query.get().getDocuments()) {
+                out.add(fromDoc(d));
+            }
+            return out;
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al buscar reservaciones por estado: " + e.getMessage(), e);
+        }
+    }
+
+
+    public void cancelarReservacion(String id) {
+        Firestore db = FirestoreUtil.getDb();
+        try {
+            db.collection(COLLECTION).document(id)
+                    .update("estado", "cancelada").get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException("Error al cancelar reservación: " + e.getMessage(), e);
+        }
+    }
+
+
     private Map<String, Object> toMap(Reservacion r) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", r.getId());
@@ -82,6 +166,7 @@ public class ReservacionService {
         map.put("estado", r.getEstado());
         return map;
     }
+
 
     private Reservacion fromDoc(DocumentSnapshot d) {
         Reservacion r = new Reservacion();
@@ -96,4 +181,3 @@ public class ReservacionService {
         return r;
     }
 }
-
